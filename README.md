@@ -23,7 +23,7 @@ Most stable diffusion things. Not even changing CFG_Scale (I leave at default, t
 
 + Create a conda environment
 + Activate
-+ git clone the above repo to a local folder or if you have a SD local installation there should work without having to download loads of stuff.
++ git clone the above repo to a local folder or if you have a SD local installation, then install there as it should work without having to again install stable diffusion as long as its in the same directory as the model files. NOTE will look at adding a path setting so this is easier. 
 + pip install PyQt5
 + conda install pandas
 + conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia ******DEPENDS ON SYSTEM BUT INSTALL PYTORCH******
