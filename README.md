@@ -11,8 +11,35 @@ The actual integration with stable diffusion is pretty light and therefore any u
 
 # So what does this do?
 
-Well the process is:- create a production name, choose the number of images per shot, associate an aubrushli formatted Shot list, cast list and save folder with that production. Associate Characters with celebrities (although you could use whatever you want) to allow more consistent images.
-Then choose which shots to create images for, and wait (hopefully not too long but it depends on your hardware)
+Well the process is:-  
+ 
+Run the python file production2.py
+![aub_imgs1](https://user-images.githubusercontent.com/26924183/229894501-d1fe1c5f-eba6-45ff-9e0c-3a0933fdc225.png)
+
+create a production name
+![aub_imgs2](https://user-images.githubusercontent.com/26924183/229894856-686e6f19-16b3-40f7-b819-2247826a0ae0.png)
+
+choose the number of images per shot, associate an aubrushli formatted Shot list, cast list and save folder with that production.
+![aub_imgs3](https://user-images.githubusercontent.com/26924183/229895039-ae1c6738-cb08-44c9-8a30-3523512e34fc.png)
+
+![aub_imgs4](https://user-images.githubusercontent.com/26924183/229895277-5e80ca1a-4f33-4816-9d74-8e2505cd9882.png)
+
+![aub_imgs5](https://user-images.githubusercontent.com/26924183/229895671-5152d487-c034-4924-bacf-6d33a8d14bef.png)
+
+Associate Characters with celebrities (although you could use whatever you want) to allow more consistent images.
+![aub_imgs6](https://user-images.githubusercontent.com/26924183/229896101-e3897acf-14e1-47b8-b620-ab769ba1b893.png)
+
+![aub_imgs7](https://user-images.githubusercontent.com/26924183/229896141-1d0e9a20-d853-4595-86ce-2db14a942062.png)
+
+![aub_imgs8](https://user-images.githubusercontent.com/26924183/229896403-7f0ce52d-e802-4e51-8647-2bec586b65a4.png)
+
+Then choose which shots to create images for
+![aub_imgs9](https://user-images.githubusercontent.com/26924183/229896724-cab6a046-1ead-424e-aeb8-f15a0396dc76.png)
+
+and wait (hopefully not too long but it depends on your hardware)
+![aub_imgs10](https://user-images.githubusercontent.com/26924183/229897060-d5e84860-6106-4145-8c3d-056911e1a565.png)
+
+![aub_imgs11](https://user-images.githubusercontent.com/26924183/229897543-3b2cca9f-0af5-448e-80ae-fc2c1b86a404.png)
 
 # What it won't let you do
 
