@@ -45,7 +45,7 @@ and wait (hopefully not too long but it depends on your hardware)
 
 ![aub_imgs10](https://user-images.githubusercontent.com/26924183/229897060-d5e84860-6106-4145-8c3d-056911e1a565.png)
 
-Ta da!! although here you see some of the failings, this is meant to be a medium shot but it is wide most of the time and obviously some of the other issues with SD are apparent e.g. artefacts and multiples.
+Ta da!! although here you see some of the failings, this is meant to be a medium shot but it is wide most of the time and obviously some of the other issues with SD are apparent e.g. artefacts and multiples. Nevertheless in my opinion even if you can't immediately get a good storyboard image, just the sselection of images gives ideas for set design, wardrobe and possible shot selection, not to mention possibly pitch decks.
 
 ![aub_imgs11](https://user-images.githubusercontent.com/26924183/229897543-3b2cca9f-0af5-448e-80ae-fc2c1b86a404.png)
 
