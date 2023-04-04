@@ -35,7 +35,7 @@ Then you need to go and get folders and files from Stability AI. The one I used 
 
 However I realise that I can reduce this down substantially by not using the safetensors files:- below is the folders and files I am using. Most of them are from that huggingface repository but the really cut back model is from... and the qss sheet is from ... 
 
-![image](https://user-images.githubusercontent.com/26924183/229889597-6e42940b-6591-4363-9ee7-881a4825d098.png)
+![AUb_images](https://user-images.githubusercontent.com/26924183/229891129-cbdc51c9-782f-44a2-908d-8fdac2ad46ab.png)
 
 
 Anyway thats the initial todo, lots to add. 
