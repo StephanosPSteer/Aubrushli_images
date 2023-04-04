@@ -33,7 +33,7 @@ Most stable diffusion things. Not even changing CFG_Scale (I leave at default, t
 
 Then you need to go and get folders and files from Stability AI. The one I used was at hugging face https://huggingface.co/stabilityai/stable-diffusion-2-1/tree/main
 
-However I realise that I can reduce this down substantially by not using the safetensors files:- below is the folders and files I am using. Most of them are from that huggingface repository but the really cut back model is from... and the qss sheet is from ... 
+However I realise that I can reduce this down substantially by not using the safetensors files:- below is the folders and files I am using. Most of them are from that huggingface repository but the really cut back model is from https://huggingface.co/stabilityai/sd-vae-ft-mse-original/blob/main/vae-ft-mse-840000-ema-pruned.ckpt and the qss sheet is from ... 
 
 ![AUb_images](https://user-images.githubusercontent.com/26924183/229891129-cbdc51c9-782f-44a2-908d-8fdac2ad46ab.png)
 
