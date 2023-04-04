@@ -18,4 +18,24 @@ Then choose which shots to create images for, and wait (hopefully not too long b
 
 Most stable diffusion things. Not even changing CFG_Scale (I leave at default, the thing is I figure if you are using for storyboards you just want to use it and not get too involved in the frankly a bit unpredictable cfg_scale). At the moment Image aspect ratio is wider than the normal 512 x 512 (if not quite 16:9). This is because this is aimed at storyboards and most will be wide screen. This may well cause issues on lower hardware. I havent added any controlnet features or actually any img to img because the idea is to get it directly from a shot list. Thats not to say it won't look a million times better so maybe later I will give tha option. I looked at Gligen and at latent couple as I thought they could be very useful but right now if I use a wider format they tend to create multiples much more than normal. I want to properly incorporate Seeds as I think that will be useful for a consistent look across shots and that is my very next thing to do.
 
-Anyway 
+
+## Brief suggested install process
+
++ Create a conda environment
++ Activate
++ git clone the above repo to a local folder or if you have a SD local installation there should work without having to download loads of stuff.
++ pip install PyQt5
++ conda install pandas
++ conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia ******DEPENDS ON SYSTEM BUT INSTALL PYTORCH******
++ pip install diffusers
++ pip install git+https://github.com/huggingface/transformers ******************NEED TRANSFORMERS FROM SOURCE ******************
++ pip install accelerate
+
+Then you need to go and get folders and files from Stability AI. The one I used was at hugging face https://huggingface.co/stabilityai/stable-diffusion-2-1/tree/main
+
+However I realise that I can reduce this down substantially by not using the safetensors files:- below is the folders and files I am using. Most of them are from that huggingface repository but the really cut back model is from... and the qss sheet is from ... 
+
+![image](https://user-images.githubusercontent.com/26924183/229889597-6e42940b-6591-4363-9ee7-881a4825d098.png)
+
+
+Anyway thats the initial todo, lots to add. 
