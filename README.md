@@ -79,6 +79,7 @@ However I realise that I can reduce this down substantially by not using the saf
 + Maybe CFG_Scale but perhaps just change to best replicate prompt.
 + Make it look a lot better.
 + Incorporate Gligen or Composable diffusion/latent couple.
-+ Hook it up properly with Aubrushli itself and indeed with the StoryBoard Module. 
++ Hook it up properly with Aubrushli itself and indeed with the StoryBoard Module.
++ Clean up code, wasn't planning on a full app it just is increasingly going that way and right now spaghetti and technical debt is increasing. 
 
 Anyway thats the initial readme, lots to add, watch this space. 
