@@ -84,7 +84,7 @@ I have added the ability to change styles and put a few stylesheets in the style
 + ~~Change the qss stylesheet file in settings. as I am currently forcing people to use [this](https://github.com/sommerc/pyqt-stylesheets/blob/master/pyqtcss/src/dark_orange/style.qss)~~
 + Let people choose model in the app. The app currently selects whichever model is in the current folder.
 + Selectable SEEDS so that you can get a consistent look across storyboards.
-+ Investigate incorporating seed, prompt and model used into image metadata.
++ ~~Investigate incorporating seed, prompt and model used into image metadata.~~ I have added it, now to add a viewer to see it.
 + Allow changing image size/aspect ratio
 + Maybe CFG_Scale but perhaps just change to best replicate prompt.
 + Make it look a lot better.
