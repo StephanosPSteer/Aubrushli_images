@@ -7,8 +7,7 @@ from torch import autocast
 from diffusers import StableDiffusionPipeline
 import argparse
 import re
-import json
-import copy
+
 
 parser = argparse.ArgumentParser(description='Process selected rows')
 parser.add_argument('--shots', nargs='+', help='Selected rows')
@@ -70,7 +69,6 @@ df_filtered = df[df['Shot Number'].isin(values)]
 
 negative_prompt = "(visible hand:1.3), (ugly:1.3), (duplicate:1.9),  (cloned face:1.9), (morbid:1.1), (mutilated:1.1), [out of frame], extra fingers, mutated hands, (poorly drawn hands:1.1), (poorly drawn face:1.2), (mutation:1.3), (deformed:1.3), (ugly:1.1), blurry, (bad anatomy:1.1), (bad proportions:1.2), (extra limbs:1.1), cloned face, (disfigured:1.2), out of frame, ugly, extra limbs, (bad anatomy), gross proportions, (malformed limbs), (missing arms:1.1), (missing legs:1.1), (extra arms:1.2), (extra legs:1.2), mutated hands, (fused fingers), (too many fingers), (long neck:1.2)"
 negative_prompt = "duplicate, lowres, signs, memes, labels, text, food, text, error, mutant, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, made by children, caricature, ugly, boring, sketch, lacklustre, repetitive, cropped, (long neck), facebook, youtube, body horror, out of frame, mutilated, tiled, frame, border, porcelain skin, doll like, doll"
-highest_number = 0
 next_number =0
 
 # Loop through each row in the DataFrame and access the values of each column by column name
@@ -85,52 +83,16 @@ for index, row in df_filtered.iterrows():
     lens = str(row['lens'])
     desc = str(row['Description'])
 
-    # # Connect to the SQLite database
-    # conn = sqlite3.connect(db_path)
-    # c = conn.cursor()
-    # # Retrieve the rows with the matching shot size from the database
-    # query = f"SELECT xstart, ystart, xend, yend FROM locationdata WHERE LOWER(shot_size) = LOWER('{shot_size}')"
-    # #print(query) # Print the query with shot_size included      
-    # c.execute(query)
-
-
-
-    # #c.execute("SELECT xstart, ystart, xend, yend FROM locationdata WHERE shot_size = ?", (shot_size,))
-    # results = c.fetchall()
-    # # Put the values into a Pandas DataFrame
-    # #newdf = pd.DataFrame(rows, columns=['xstart', 'ystart', 'xend', 'yend'])
-    # #print(newdf)
-    # # Convert the results to an array of decimals
-    # locations_array =[]
-    # location_array = []
-    # for row in results:
-    #     location_array.append([float(val) for val in row])
-
-
-    # locations_array.append(location_array)
+   
     
     for row in role_actor_data:
       desc = re.sub(r'(?i)\b{}\b'.format(re.escape(row["rolename"])), row["actorname"], desc)
     
-    # rolearry = []
-    # for performer in role_actor_data:
-    #     if performer["actorname"] in desc:
-    #         rolearry.append(performer["actorname"])
-    
-    # if len(rolearry) > 1:
-    #     for i in range(1, len(rolearry)): 
-            
-    #         location = copy.deepcopy(location_array)
-    #         thediff = location[0][2] - location[0][0]
-    #         location[0][0] = (location[0][0]) * (i+1)
-    #         location[0][2] = location[0][0] + thediff
-    #         locations_array = locations_array[:] + [location]
-   
-    #json_data = json.dumps(locations_array)
+
     shot_size = shot_size.replace("W","Wide")
     shot_size = shot_size.replace("M","Medium")
     shot_size = shot_size.replace("CU","Close Up")
-    prompt = shot_size + ',' + desc + ',' + scenename + ',' + lens + "mm," + angle + ',' + shot_type + ',' + move + ',' + "black & white,pencil sketch,hyper realistic,intricate sharp details,smooth,colorful background"
+    prompt =  desc + ',' + scenename + ',' + shot_size + ',' + lens + "mm," + angle + ',' + shot_type + ',' + move + ',' + "black & white,pencil sketch,hyper realistic,intricate sharp details,smooth,colorful background"
     
     # Define the path of the directory you want to create
     directory_path = topdir + "/shot" + shot
@@ -143,24 +105,14 @@ for index, row in df_filtered.iterrows():
          print("Directory created successfully!")
     else:
         print("Directory already exists.")
-         # Loop through each file in the directory
-        for filename in os.listdir(directory_path):
-            if filename.endswith('.png'):  # Check if the file is a PNG file
-                 
-                file_number = int(filename.split('_')[-1].split('.')[0])  # Extract the number after the underscore
-                # Check if the number is higher than the current highest number
-                if file_number > highest_number:
-                    highest_number = file_number
-        next_number = highest_number + 1  # Assign a variable with a value of one more than the highest number
-        print("The highest number found in the directory is:", highest_number)
-        print("The next number to use is:", next_number)
 
 
+    next_number = len( os.listdir(directory_path) ) + 1
     for pics in range(next_number, next_number + myimages):
         with autocast("cuda"):
             seed = random.randint(1, 2147483647)
             generator = torch.Generator("cuda").manual_seed(seed)
             image = pipe(prompt, negative_prompt=negative_prompt, height=536, width=768, generator=generator).images[0]
-            imgpath = directory_path + "/" + "shot" + shot + "_" +str(pics) +".png"
+            imgpath = directory_path + "/" + "shot" + shot + "_" + str(pics) + "_SEED" + str(seed) + ".png"
             image.save(imgpath)
     pics+=1
