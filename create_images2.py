@@ -7,6 +7,8 @@ from torch import autocast
 from diffusers import StableDiffusionPipeline
 import argparse
 import re
+from PIL import Image
+from PIL.PngImagePlugin import PngInfo
 
 
 parser = argparse.ArgumentParser(description='Process selected rows')
@@ -114,5 +116,9 @@ for index, row in df_filtered.iterrows():
             generator = torch.Generator("cuda").manual_seed(seed)
             image = pipe(prompt, negative_prompt=negative_prompt, height=536, width=768, generator=generator).images[0]
             imgpath = directory_path + "/" + "shot" + shot + "_" + str(pics) + "_SEED" + str(seed) + ".png"
-            image.save(imgpath)
+            metadata = PngInfo()
+            metadata.add_text("prompt", str(prompt))
+            metadata.add_text("seed", str(seed))
+            image.save(imgpath, pnginfo=metadata)
+            targetImage = Image.open(imgpath)
     pics+=1
