@@ -16,13 +16,13 @@ Well the process is:-
 
 ![aub_imgs1](https://user-images.githubusercontent.com/26924183/229894501-d1fe1c5f-eba6-45ff-9e0c-3a0933fdc225.png)
 
-2) create a production name
+2) Create a production name
 
 ![aub_imgs2](https://user-images.githubusercontent.com/26924183/229894856-686e6f19-16b3-40f7-b819-2247826a0ae0.png)
 
 ![aub_imgs3](https://user-images.githubusercontent.com/26924183/229895039-ae1c6738-cb08-44c9-8a30-3523512e34fc.png)
 
-3) choose the number of images per shot, associate an aubrushli formatted Shot list, cast list and save folder with that production.
+3) Choose the number of images per shot, associate an aubrushli formatted Shot list, cast list and save folder with that production.
 
 ![aub_imgs4](https://user-images.githubusercontent.com/26924183/229895277-5e80ca1a-4f33-4816-9d74-8e2505cd9882.png)
 
@@ -40,13 +40,17 @@ Well the process is:-
 
 ![aub_imgs9](https://user-images.githubusercontent.com/26924183/229896724-cab6a046-1ead-424e-aeb8-f15a0396dc76.png)
 
-6) and wait (hopefully not too long but it depends on your hardware)
+6) And wait (hopefully not too long but it depends on your hardware - for me an image every 2 or 3 seconds approx)
 
 ![aub_imgs10](https://user-images.githubusercontent.com/26924183/229897060-d5e84860-6106-4145-8c3d-056911e1a565.png)
 
 7) Ta da!! although here you see some of the failings, this is meant to be a medium shot but it is wide most of the time and obviously some of the other issues with SD are apparent e.g. artefacts and multiples. Nevertheless in my opinion even if you can't immediately get a good storyboard image, just the sselection of images gives ideas for set design, wardrobe and possible shot selection, not to mention possibly pitch decks.
 
 ![aub_imgs11](https://user-images.githubusercontent.com/26924183/229897543-3b2cca9f-0af5-448e-80ae-fc2c1b86a404.png)
+
+# Speaking of Hardware
+
+It is really the hardware requirements for [stable diffusion](https://github.com/AUTOMATIC1111/stable-diffusion-webui) which says "4GB video card support (also reports of 2GB working)" so that, you need at least an ok graphics card or a Mac m1/m2, the only thing I have tested on is a Windows PC with an Nvidia 3090
 
 
 # What it won't let you do
