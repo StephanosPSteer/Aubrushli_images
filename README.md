@@ -40,7 +40,7 @@ Well the process is:-
 
 ![aub_imgs9](https://user-images.githubusercontent.com/26924183/229896724-cab6a046-1ead-424e-aeb8-f15a0396dc76.png)
 
-6) And wait (hopefully not too long but it depends on your hardware - for me an image every 2 or 3 seconds approx)
+6) And wait (hopefully not too long but it depends on your hardware - for me an image every 4 seconds approx)
 
 ![aub_imgs10](https://user-images.githubusercontent.com/26924183/229897060-d5e84860-6106-4145-8c3d-056911e1a565.png)
 
