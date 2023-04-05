@@ -2,18 +2,31 @@ import os
 import sqlite3
 import sys
 import subprocess
-from PyQt5.QtWidgets import QLineEdit, QApplication, QHBoxLayout, QMainWindow, QWidget, QVBoxLayout, QRadioButton, QLabel, QPushButton, QMessageBox 
+from PyQt5.QtWidgets import QLineEdit, QApplication, QHBoxLayout, QMainWindow, QWidget, QVBoxLayout, QRadioButton, QLabel, QPushButton, QMessageBox, QComboBox, QGroupBox 
 
 # get the current file's directory path
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 # navigate to the desired file's path relative to the current directory
 db_path = os.path.join(current_dir, 'aubrushli.db')
-style_path = os.path.join(current_dir, 'dark_orange3.qss')
+#style_path = os.path.join(current_dir, 'dark_orange3.qss')
+stylesfolder = current_dir + "/styles/"
+
+connection = sqlite3.connect(db_path)
+cursor = connection.cursor()
+stylesql= f"SELECT stylesheetpath FROM settings" 
+cursor.execute(stylesql)
+currstyle = cursor.fetchone()[0]
+connection.commit()
+connection.close()
+
+style_path = os.path.join(stylesfolder, currstyle)
 
 class foldWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.stylesfolder = stylesfolder
+        self.currentstyle =""
         self.rows = []
         self.initUI()
         
@@ -48,17 +61,43 @@ class foldWindow(QMainWindow):
 
     def initUI(self):
         central_widget = QWidget()
+        self.groupbox = QGroupBox("Group Box")
         self.vbox = QVBoxLayout()
+  
+        stylelabel = QLabel('Choose a style')
+        self.vbox.addSpacing(10)
+        self.dropdown = QComboBox()
+        # Get a list of all the QSS files in the folder
+        qss_files = [file for file in os.listdir(self.stylesfolder) if file.endswith(".qss")]
+
+        # Add each QSS filename to the dropdown
+        for file in qss_files:
+            self.dropdown.addItem(file)
+        
+        self.dropdown.setCurrentText(currstyle)    
+        self.vbox.addWidget(stylelabel)
+        self.vbox.addWidget(self.dropdown)
+
+        self.apply_button = QPushButton("Apply QSS")
+        self.apply_button.clicked.connect(self.apply_qss)
+        self.vbox.addWidget(self.apply_button)
+
+        self.groupbox.setLayout(self.vbox)
+
         # Add a label at the top of the window
-        label = QLabel('Please select or Enter new production, then select')
-        label.setStyleSheet("font-size: 18pt; font-family: Courier; font-weight: bold;")
+        label = QLabel('Please Select/Enter new production')
+        
+        self.vbox.addSpacing(10)
         self.vbox.addWidget(label)
+        self.vbox.addSpacing(10)
+
         self.sqlsel()
 
         # Create label for text box
         self.prodlabel = QLabel(self)
         self.prodlabel.setText("Enter New Production:")
         self.prodlabel.move(50, 50)
+        self.vbox.addSpacing(10)
 
         # Create text box
         self.prodtext_box = QLineEdit(self)
@@ -87,10 +126,29 @@ class foldWindow(QMainWindow):
         # Connect the confirm button to the handler function
         confirm_button.clicked.connect(self.confirmSelection)
 
-        # Load the style sheet
-        with open(style_path, "r") as f:
-            self.setStyleSheet(f.read())
+       
+        self.apply_qss()
 
+    # Create a function to apply the selected QSS file to the window
+    def apply_qss(self):
+        qss_file = self.dropdown.currentText()
+        currstyle = qss_file
+        self.currentstyle = self.dropdown.currentText()
+        qss_path = os.path.join(stylesfolder, qss_file)
+        #print(qss_path)
+        with open(qss_path, "r") as f:
+            qss_data = f.read()
+        #print(qss_data)
+        app.setStyleSheet(qss_data)
+        conn = sqlite3.connect(db_path)
+        # Create a cursor object to execute SQL queries
+        cursor = conn.cursor()
+        cursor.execute("update settings set stylesheetpath=?", (qss_file,))
+        # Commit the transaction to the database
+        conn.commit()
+        # Close the database connection
+        conn.close()
+        #print("Styles applied")
 
     def add_production(self):
         # Get the value from the text box
@@ -116,7 +174,7 @@ class foldWindow(QMainWindow):
             nextwin = current_dir +  '\settings_window7.py'
             productionid = [str(val) for val in selected_rows]
             csv_window.hide()
-            subprocess.run(['python', nextwin] + productionid)
+            subprocess.run(['python', nextwin] + productionid) #+ ['--style', self.currentstyle])
             self.close()
 
 
