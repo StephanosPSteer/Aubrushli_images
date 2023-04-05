@@ -81,7 +81,7 @@ However I realise that I could reduce the download substantially by not using th
 I have added the ability to change styles and put a few stylesheets in the styles folder the extra styles come from [here](https://qss-stock.devsecstudio.com/templates.php)
 
 # TODO LIST
-+ ~~Change the qss stylesheet file in settings. as I am currently forcing people to use [this](https://github.com/sommerc/pyqt-stylesheets/blob/master/pyqtcss/src/dark_orange/style.qss)
++ ~~Change the qss stylesheet file in settings. as I am currently forcing people to use [this](https://github.com/sommerc/pyqt-stylesheets/blob/master/pyqtcss/src/dark_orange/style.qss)~~
 + Let people choose model in the app. The app currently selects whichever model is in the current folder.
 + Selectable SEEDS so that you can get a consistent look across storyboards.
 + Investigate incorporating seed, prompt and model used into image metadata.
