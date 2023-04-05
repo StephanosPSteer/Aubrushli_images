@@ -4,6 +4,7 @@ from PyQt5 import QtWidgets, QtSql
 from PyQt5.QtWidgets import QApplication, QPushButton
 import argparse
 import subprocess
+import sqlite3
 
 parser = argparse.ArgumentParser(description='castlistid')
 parser.add_argument('--castlistid', nargs='+', help='castlistid')
@@ -15,7 +16,17 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 
 # navigate to the desired file's path relative to the current directory
 db_path = os.path.join(current_dir, 'aubrushli.db')
-style_path = os.path.join(current_dir, 'dark_orange3.qss')
+stylesfolder = current_dir + "/styles/"
+
+connection = sqlite3.connect(db_path)
+cursor = connection.cursor()
+stylesql= f"SELECT stylesheetpath FROM settings" 
+cursor.execute(stylesql)
+currstyle = cursor.fetchone()[0]
+connection.commit()
+connection.close()
+
+style_path = os.path.join(stylesfolder, currstyle)
 
 class MainWindow(QtWidgets.QFrame):
     def __init__(self, parent=None):
