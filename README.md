@@ -70,11 +70,15 @@ Most stable diffusion things. Not even changing CFG_Scale (I leave at default, t
 + pip install git+https://github.com/huggingface/transformers ******************NEED TRANSFORMERS FROM SOURCE ******************
 + pip install accelerate
 
-Then you need to go and get folders and files from Stability AI. The one I used was at hugging face https://huggingface.co/stabilityai/stable-diffusion-2-1/tree/main
+Then you need to go and get folders and files from Stability AI. The one I used was at [hugging face](https://huggingface.co/stabilityai/stable-diffusion-2-1/tree/main)
 
-However I realise that I can reduce this down substantially by not using the safetensors files:- below is the folders and files I am using. Most of them are from that huggingface repository but the really cut back model is from https://huggingface.co/stabilityai/sd-vae-ft-mse-original/blob/main/vae-ft-mse-840000-ema-pruned.ckpt and the qss sheet is from https://github.com/sommerc/pyqt-stylesheets/blob/master/pyqtcss/src/dark_orange/style.qss 
+However I realise that I could reduce the download substantially by not using the safetensors files:- below is the folders and files I am using. Most of them are from that huggingface repository but the really cut back model is [here](https://huggingface.co/stabilityai/sd-vae-ft-mse-original/blob/main/vae-ft-mse-840000-ema-pruned.ckpt) and the qss sheet is from [here](https://github.com/sommerc/pyqt-stylesheets/blob/master/pyqtcss/src/dark_orange/style.qss)
 
 ![AUb_images](https://user-images.githubusercontent.com/26924183/229891129-cbdc51c9-782f-44a2-908d-8fdac2ad46ab.png)
+
+# Styles
+
+I have added the ability to change styles and put a few stylesheets in the styles folder the extra styles come from [here](https://qss-stock.devsecstudio.com/templates.php)
 
 # TODO LIST
 + Change the gss stylesheet file in settings. as I am currently forcing people to use [this](https://github.com/sommerc/pyqt-stylesheets/blob/master/pyqtcss/src/dark_orange/style.qss)
