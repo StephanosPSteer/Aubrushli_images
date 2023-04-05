@@ -77,6 +77,8 @@ However I realise that I can reduce this down substantially by not using the saf
 ![AUb_images](https://user-images.githubusercontent.com/26924183/229891129-cbdc51c9-782f-44a2-908d-8fdac2ad46ab.png)
 
 # TODO LIST
++ Change the gss stylesheet file in settings. as I am currently forcing people to use [this](https://github.com/sommerc/pyqt-stylesheets/blob/master/pyqtcss/src/dark_orange/style.qss)
++ Let people choose model in the app. The app currently selects whichever model is in the current folder.
 + Selectable SEEDS so that you can get a consistent look across storyboards.
 + Investigate incorporating seed, prompt and model used into image metadata.
 + Allow changing image size/aspect ratio
