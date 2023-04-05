@@ -12,7 +12,7 @@ The actual integration with stable diffusion is pretty light and therefore any u
 
 Well the process is:-  
  
-1) Run the python file production2.py
+1) Run the python file productions.py
 
 ![aub_imgs1](https://user-images.githubusercontent.com/26924183/229894501-d1fe1c5f-eba6-45ff-9e0c-3a0933fdc225.png)
 
