@@ -16,7 +16,17 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 
 # navigate to the desired file's path relative to the current directory
 db_path = os.path.join(current_dir, 'aubrushli.db')
-style_path = os.path.join(current_dir, 'dark_orange3.qss')
+stylesfolder = current_dir + "/styles/"
+
+connection = sqlite3.connect(db_path)
+cursor = connection.cursor()
+stylesql= f"SELECT stylesheetpath FROM settings" 
+cursor.execute(stylesql)
+currstyle = cursor.fetchone()[0]
+connection.commit()
+connection.close()
+
+style_path = os.path.join(stylesfolder, currstyle)
 
 class FolderValidator(QValidator):
     def validate(self, input_str, pos):
