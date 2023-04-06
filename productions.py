@@ -3,6 +3,7 @@ import sqlite3
 import sys
 import subprocess
 from PyQt5.QtWidgets import QLineEdit, QApplication, QHBoxLayout, QMainWindow, QWidget, QVBoxLayout, QRadioButton, QLabel, QPushButton, QMessageBox, QComboBox, QGroupBox 
+import sqlboiler
 
 # get the current file's directory path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -12,14 +13,8 @@ db_path = os.path.join(current_dir, 'aubrushli.db')
 #style_path = os.path.join(current_dir, 'dark_orange3.qss')
 stylesfolder = current_dir + "/styles/"
 
-connection = sqlite3.connect(db_path)
-cursor = connection.cursor()
-stylesql= f"SELECT stylesheetpath FROM settings" 
-cursor.execute(stylesql)
-currstyle = cursor.fetchone()[0]
-connection.commit()
-connection.close()
 
+currstyle = sqlboiler.getstyle(db_path)
 style_path = os.path.join(stylesfolder, currstyle)
 
 class foldWindow(QMainWindow):
@@ -63,7 +58,7 @@ class foldWindow(QMainWindow):
         central_widget = QWidget()
         self.groupbox = QGroupBox("Group Box")
         self.vbox = QVBoxLayout()
-  
+     
         stylelabel = QLabel('Choose a style')
         self.vbox.addSpacing(10)
         self.dropdown = QComboBox()
@@ -166,6 +161,7 @@ class foldWindow(QMainWindow):
         for row in self.rows:
             if row[2].isChecked():
                 selected_rows.append(row[1][0])
+                
         if not selected_rows:
             # Show an error message if no row is selected
             QMessageBox.critical(self, 'Error', 'No row selected. Please select at least one row before confirming.')
