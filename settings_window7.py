@@ -7,6 +7,7 @@ import pandas as pd
 import sqlite3
 import subprocess
 import argparse
+import sqlboiler
 
 parser = argparse.ArgumentParser(description='Process selected rows')
 parser.add_argument('rows', nargs='+', help='Selected rows')
@@ -18,14 +19,8 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 db_path = os.path.join(current_dir, 'aubrushli.db')
 stylesfolder = current_dir + "/styles/"
 
-connection = sqlite3.connect(db_path)
-cursor = connection.cursor()
-stylesql= f"SELECT stylesheetpath FROM settings" 
-cursor.execute(stylesql)
-currstyle = cursor.fetchone()[0]
-connection.commit()
-connection.close()
 
+currstyle = sqlboiler.getstyle(db_path)
 style_path = os.path.join(stylesfolder, currstyle)
 
 class FolderValidator(QValidator):
