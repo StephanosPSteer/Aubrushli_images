@@ -55,7 +55,7 @@ It is really the hardware requirements for [stable diffusion](https://github.com
 
 # What it won't let you do
 
-Most stable diffusion things. Not even changing CFG_Scale (I leave at default, the thing is I figure if you are using for storyboards you just want to use it and not get too involved in the frankly a bit unpredictable cfg_scale). At the moment Image aspect ratio is wider than the normal (512 x 512 1:1) its 768 x 512 not quite 16:9. This is because this is aimed at storyboards and most storyboards will be wide screen. This may well cause issues on lower hardware. 
+Most stable diffusion things. Not even changing CFG_Scale (I leave at default, the thing is I figure if you are using for storyboards you just want to use it and not get too involved in the frankly a bit unpredictable cfg_scale). At the moment Image aspect ratio is wider than the normal (512 x 512 1:1) its 768 x 512 (Stability AI recommends at least one axis being 512) not quite 16:9. This is because this is aimed at storyboards and most storyboards will be wide screen. This may well cause issues on lower hardware. 
 
 I havent added any controlnet features or actually any img to img features because the idea is to get images directly from a shot list. Thats not to say it won't look a million times better but it will be difficult to automate so maybe later I will try and incorporate those options. 
 
