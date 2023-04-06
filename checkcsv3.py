@@ -1,4 +1,3 @@
-
 import csv
 import sys
 import subprocess
@@ -6,7 +5,7 @@ import sqlite3
 import os
 import argparse
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QPushButton, QMessageBox
-
+import sqlboiler
 # get the current file's directory path
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -14,14 +13,9 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 db_path = os.path.join(current_dir, 'aubrushli.db')
 stylesfolder = current_dir + "/styles/"
 
-connection = sqlite3.connect(db_path)
-cursor = connection.cursor()
-stylesql= f"SELECT stylesheetpath FROM settings" 
-cursor.execute(stylesql)
-currstyle = cursor.fetchone()[0]
-connection.commit()
-connection.close()
 
+
+currstyle = sqlboiler.getstyle(db_path)
 style_path = os.path.join(stylesfolder, currstyle)
 
 class CSVWindow(QMainWindow):
@@ -43,20 +37,14 @@ class CSVWindow(QMainWindow):
         label.setStyleSheet("font-size: 18pt; font-family: Courier; font-weight: bold;")
         vbox.addWidget(label)
         
-        # Add a label at the top of the window
-        label1 = QLabel('NOTE: This is the bit takes time so be patient and you should see activity on the commandline')
-        label1.setStyleSheet("font-size: 18pt; font-family: Courier; font-weight: bold;")
-        vbox.addWidget(label1)
-        
         # Read the CSV file and create a checkbox for each row
         with open(self.filename, 'r') as f:
-            reader = csv.reader(f)
-            header = next(reader)
+            reader = csv.DictReader(f)
             for i, row in enumerate(reader):
-                row_text = ', '.join(row[:10])
-                checkbox = QCheckBox(f"SHOT {i+1}: {row_text}")
+                row_text = ', '.join([row['Description'], row['Scene Number'], row['Scene Name'], row['Shot Size'], row['Shot Type'], row['AngleOrigin'], row['MoveMent'], row['lens'] ])
+                checkbox = QCheckBox(f"SHOT {row['Shot Number']}: {row_text}")
                 vbox.addWidget(checkbox)
-                self.rows.append((i+1, row, checkbox))
+                self.rows.append((row['Shot Number'], row, checkbox))
         
         # Create a horizontal layout for the confirm button
         hbox = QHBoxLayout()
@@ -80,13 +68,18 @@ class CSVWindow(QMainWindow):
         
     def confirmSelection(self):
         selected_rows = []
+        #print(self.rows)
         for row in self.rows:
+            #print(row)
             if row[2].isChecked():
-                selected_rows.append(row[1][0])
+                #print(row)
+                selected_rows.append(row[0])
+                print(selected_rows)
         if not selected_rows:
             # Show an error message if no row is selected
             QMessageBox.critical(self, 'Error', 'No row selected. Please select at least one row before confirming.')
         else:
+            csv_window.hide()
             subprocess.run(['python', current_dir + '/create_images2.py'] + ['--shots'] + selected_rows + ['--prodid',  str(self.prodid), '--castlistid', str(self.castlistid)] )
             self.close()
 
@@ -114,3 +107,4 @@ if __name__ == '__main__':
     csv_window = CSVWindow(shot_list_file, prodid, castlistid)
     csv_window.show()
     sys.exit(app.exec_())
+
