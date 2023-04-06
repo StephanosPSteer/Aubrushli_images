@@ -74,7 +74,7 @@ class UI(QWidget):
         self.num_images_edit =QLineEdit(str(0))
         self.shotlist_edit =QLineEdit('')
         self.save_folder_edit = QLineEdit('')
-        self.num_images_label = QLabel('Number of Images:')
+        self.num_images_label = QLabel('Number of Images:(1-50)')
         self.cast_list_edit = QLineEdit('')
         if not self.df.empty:
             self.insup =1
@@ -88,7 +88,7 @@ class UI(QWidget):
                 self.cast_list_edit = QLineEdit(self.castdf.iloc[0]['CastlistPath'])
                 self.cast_list_edit.setReadOnly(True)
 
-        self.shotlist_label = QLabel('Shotlist File:')
+        self.shotlist_label = QLabel('Shotlist File:(csv file)')
         
         self.shotlist_browse = QPushButton('Browse')
         self.shotlist_browse.clicked.connect(self.browse_shotlist_file)
@@ -98,12 +98,12 @@ class UI(QWidget):
         self.save_folder_browse = QPushButton('Browse')
         self.save_folder_browse.clicked.connect(self.browse_save_folder)
 
-        self.cast_list_label = QLabel('Cast List:')
+        self.cast_list_label = QLabel('Cast List:(csv file)')
         
         self.cast_list_browse = QPushButton('Browse')
         self.cast_list_browse.clicked.connect(self.browse_cast_list)
 
-        validator = QIntValidator(self)
+        validator = QIntValidator(1,50,self)
         self.num_images_edit.setValidator(validator)
 
         folvalidator = FolderValidator(self)
@@ -161,17 +161,17 @@ class UI(QWidget):
             self.update_button.setEnabled(False)
 
     def browse_shotlist_file(self):
-        filename = QFileDialog.getOpenFileName(self, 'Open File', '.', 'CSV files (*.csv)')
+        filename = QFileDialog.getOpenFileName(self, 'Open File', current_dir, 'CSV files (*.csv)')
         if filename:
             self.shotlist_edit.setText(filename[0])
 
     def browse_save_folder(self):
-        foldername = QFileDialog.getExistingDirectory(self, 'Open Folder', '.')
+        foldername = QFileDialog.getExistingDirectory(self, 'Open Folder', current_dir)
         if foldername:
             self.save_folder_edit.setText(foldername)
 
     def browse_cast_list(self):
-        filename = QFileDialog.getOpenFileName(self, 'Open File', '.', 'CSV files (*.csv)')
+        filename = QFileDialog.getOpenFileName(self, 'Open File', current_dir, 'CSV files (*.csv)')
         if filename:
             self.cast_list_edit.setText(filename[0])
 
@@ -240,4 +240,3 @@ app = QApplication(sys.argv)
 ui = UI()
 ui.show()
 sys.exit(app.exec_())
-
