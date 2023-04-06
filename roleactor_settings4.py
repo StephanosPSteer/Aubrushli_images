@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets, QtSql
 from PyQt5.QtWidgets import QApplication, QPushButton
 import argparse
 import subprocess
-import sqlite3
+import sqlboiler
 
 parser = argparse.ArgumentParser(description='castlistid')
 parser.add_argument('--castlistid', nargs='+', help='castlistid')
@@ -18,14 +18,8 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 db_path = os.path.join(current_dir, 'aubrushli.db')
 stylesfolder = current_dir + "/styles/"
 
-connection = sqlite3.connect(db_path)
-cursor = connection.cursor()
-stylesql= f"SELECT stylesheetpath FROM settings" 
-cursor.execute(stylesql)
-currstyle = cursor.fetchone()[0]
-connection.commit()
-connection.close()
 
+currstyle = sqlboiler.getstyle(db_path)
 style_path = os.path.join(stylesfolder, currstyle)
 
 class MainWindow(QtWidgets.QFrame):
