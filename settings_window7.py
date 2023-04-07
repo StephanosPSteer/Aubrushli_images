@@ -8,20 +8,13 @@ import sqlite3
 import subprocess
 import argparse
 import sqlboiler
+import pathboiler
 
 parser = argparse.ArgumentParser(description='Process selected rows')
 parser.add_argument('rows', nargs='+', help='Selected rows')
 
-# get the current file's directory path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# navigate to the desired file's path relative to the current directory
-db_path = os.path.join(current_dir, 'aubrushli.db')
-stylesfolder = current_dir + "/styles/"
-
-
-currstyle = sqlboiler.getstyle(db_path)
-style_path = os.path.join(stylesfolder, currstyle)
+current_dir,db_path = pathboiler.getkeypaths()
+stylesfolder, currstyle, style_path = pathboiler.getstylepaths()
 
 class FolderValidator(QValidator):
     def validate(self, input_str, pos):
@@ -58,24 +51,24 @@ class UI(QWidget):
         layout = QVBoxLayout()
 
         # Add a label at the top of the window
-        self.label1 = QLabel('Please input/update/accept values for number of images, shotlist file,image save folder')
-        
-        self.label1.setStyleSheet("font-size: 18pt; font-family: Courier; font-weight: bold;")
+        self.label1 = QLabel('Please input/update/accept values for the number of images (or choose a seed for all shots), the shotlist file and the image save folder')
         
         # create a connection to the database
         self.connection = sqlite3.connect(db_path)
-        sql= 'SELECT s.ShotlistID, s.productionid, s.numberofimages, s.ShotlistPath, s.shotlistimagesfolder FROM shotlists s where s.productionid=' + self.selected_rows[0]#self.productionid[0]
+        sql= 'SELECT s.ShotlistID, s.productionid, s.numberofimages, s.ShotlistPath, s.shotlistimagesfolder, s.PreferredSeed FROM shotlists s where s.productionid=' + self.selected_rows[0]#self.productionid[0]
         
         # create a dataframe from the data in the database
         self.df = pd.read_sql_query(sql, self.connection)
         castsql= f"""SELECT CastlistPath FROM castlists c where c.productionid= {self.selected_rows[0]} """
         self.castdf = pd.read_sql_query(castsql, self.connection)
         
+        self.seedlabel = QLabel('Enter a seed (by entering a seed only one image per shot will be created)')
         self.num_images_edit =QLineEdit(str(0))
         self.shotlist_edit =QLineEdit('')
         self.save_folder_edit = QLineEdit('')
-        self.num_images_label = QLabel('Number of Images:(1-50)')
+        self.num_images_label = QLabel('Number of images per shot:(1-50)')
         self.cast_list_edit = QLineEdit('')
+        self.seededit = QLineEdit('')
         if not self.df.empty:
             self.insup =1
             self.num_images_edit = QLineEdit(str(self.df.iloc[0]['numberofimages']))
@@ -84,6 +77,8 @@ class UI(QWidget):
             self.shotlist_edit.setReadOnly(True)
             self.save_folder_edit = QLineEdit(self.df.iloc[0]['ShotlistImagesFolder'])
             self.save_folder_edit.setReadOnly(True)
+            self.seededit = QLineEdit(str(self.df.iloc[0]['PreferredSeed']))
+            #self.seededit.setReadOnly(True)
             if not self.castdf.empty:
                 self.cast_list_edit = QLineEdit(self.castdf.iloc[0]['CastlistPath'])
                 self.cast_list_edit.setReadOnly(True)
@@ -93,7 +88,7 @@ class UI(QWidget):
         self.shotlist_browse = QPushButton('Browse')
         self.shotlist_browse.clicked.connect(self.browse_shotlist_file)
         
-        self.save_folder_label = QLabel('Save Folder:')
+        self.save_folder_label = QLabel('Images Save Folder:(top level folder for images)')
         
         self.save_folder_browse = QPushButton('Browse')
         self.save_folder_browse.clicked.connect(self.browse_save_folder)
@@ -105,6 +100,9 @@ class UI(QWidget):
 
         validator = QIntValidator(1,50,self)
         self.num_images_edit.setValidator(validator)
+
+        seedvalidator = QIntValidator(1,2147483647,self)
+        self.seededit.setValidator(seedvalidator)
 
         folvalidator = FolderValidator(self)
         self.save_folder_edit.setValidator(folvalidator)
@@ -119,15 +117,17 @@ class UI(QWidget):
         layout.addWidget(self.label1)
         layout.addWidget(self.num_images_label)
         layout.addWidget(self.num_images_edit)
+        layout.addWidget(self.seedlabel)
+        layout.addWidget(self.seededit)
         layout.addWidget(self.shotlist_label)
         layout.addWidget(self.shotlist_edit)
         layout.addWidget(self.shotlist_browse)
-        layout.addWidget(self.save_folder_label)
-        layout.addWidget(self.save_folder_edit)
-        layout.addWidget(self.save_folder_browse)
         layout.addWidget(self.cast_list_label)
         layout.addWidget(self.cast_list_edit)
         layout.addWidget(self.cast_list_browse)
+        layout.addWidget(self.save_folder_label)
+        layout.addWidget(self.save_folder_edit)
+        layout.addWidget(self.save_folder_browse)
 
         # set the layout for the widget
         self.setLayout(layout)
@@ -144,6 +144,10 @@ class UI(QWidget):
 
         # Connect the textChanged signal of the text box to a slot that enables/disables the button
         self.num_images_edit.textChanged.connect(self.enable_button)
+        self.seededit.textChanged.connect(self.enable_button)
+        # Connect the textChanged signal of each QLineEdit to a slot that clears the other QLineEdit
+        self.num_images_edit.textChanged.connect(lambda: self.clear_other_lineedit(self.seededit))
+        self.seededit.textChanged.connect(lambda: self.clear_other_lineedit(self.num_images_edit))
 
         # Disable the button initially
         self.update_button.setEnabled(False)
@@ -152,10 +156,17 @@ class UI(QWidget):
         with open(style_path, "r") as f:
             self.setStyleSheet(f.read())
 
+
+    def clear_other_lineedit(self, other_lineedit):
+        #Make seed or number of images exclusive
+        other_lineedit.clear()
+
     def enable_button(self):
+       
         # Enable the button only if all validators are valid
         if self.save_folder_edit.hasAcceptableInput() and self.shotlist_edit.hasAcceptableInput() \
-        and self.num_images_edit.hasAcceptableInput() and self.cast_list_edit.hasAcceptableInput():
+        and (self.num_images_edit.hasAcceptableInput() or self.seededit.hasAcceptableInput()) \
+        and self.cast_list_edit.hasAcceptableInput():
             self.update_button.setEnabled(True)
         else:
             self.update_button.setEnabled(False)
@@ -181,6 +192,7 @@ class UI(QWidget):
         shotlist_file = self.shotlist_edit.text()
         save_folder = self.save_folder_edit.text()
         cast_file = self.cast_list_edit.text()
+        prefseed = self.seededit.text()
 
         #check does castlist exist
         connection = sqlite3.connect(db_path)
@@ -214,11 +226,14 @@ class UI(QWidget):
             if role_result ==None:
                 
                 cursor.execute('''INSERT INTO roleactor(rolename, CastListID ) VALUES (?, ?)''', (col1_value, castlist_id))
-            
+           
         if self.insup == 0:
-            cursor.execute('''INSERT INTO Shotlists (productionID, numberofimages, shotlistpath, shotlistimagesfolder) VALUES (?, ?, ?, ?)''', (self.selected_rows[0], num_images, shotlist_file, save_folder))
+            cursor.execute('''INSERT INTO Shotlists (productionID, numberofimages, shotlistpath, shotlistimagesfolder, PreferredSeed) VALUES (?, ?, ?, ?, ?)''', (self.selected_rows[0], num_images, shotlist_file, save_folder, prefseed))
         else:
-            cursor.execute('''UPDATE Shotlists SET numberofimages=?, shotlistpath=?, shotlistimagesfolder=? WHERE productionID=?''', (num_images, shotlist_file, save_folder, self.selected_rows[0]))
+            
+            
+            cursor.execute('''UPDATE Shotlists SET numberofimages=?, shotlistpath=?, shotlistimagesfolder=?, PreferredSeed=? WHERE productionID=?''', (num_images, shotlist_file, save_folder, prefseed, self.selected_rows[0]))
+            
         connection.commit()
         connection.close()
 
@@ -240,3 +255,4 @@ app = QApplication(sys.argv)
 ui = UI()
 ui.show()
 sys.exit(app.exec_())
+

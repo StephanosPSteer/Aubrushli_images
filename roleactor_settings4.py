@@ -5,22 +5,15 @@ from PyQt5.QtWidgets import QApplication, QPushButton
 import argparse
 import subprocess
 import sqlboiler
+import pathboiler
 
 parser = argparse.ArgumentParser(description='castlistid')
 parser.add_argument('--castlistid', nargs='+', help='castlistid')
 parser.add_argument('--prodid', nargs='+', help='castlistid')
 args = parser.parse_args()
 
-# get the current file's directory path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# navigate to the desired file's path relative to the current directory
-db_path = os.path.join(current_dir, 'aubrushli.db')
-stylesfolder = current_dir + "/styles/"
-
-
-currstyle = sqlboiler.getstyle(db_path)
-style_path = os.path.join(stylesfolder, currstyle)
+current_dir,db_path = pathboiler.getkeypaths()
+stylesfolder, currstyle, style_path = pathboiler.getstylepaths()
 
 class MainWindow(QtWidgets.QFrame):
     def __init__(self, parent=None):

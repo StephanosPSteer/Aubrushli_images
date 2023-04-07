@@ -4,7 +4,7 @@ import pandas as pd
 import torch
 import sqlite3
 from torch import autocast
-from diffusers import StableDiffusionPipeline
+from diffusers import StableDiffusionPipeline#, AutoencoderKL
 import argparse
 import re
 from PIL import Image
@@ -16,57 +16,61 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QScrollArea
 from PyQt5.QtCore import QThread, pyqtSignal
 import json
-import sqlboiler  
-
-
+import sqlboiler
+import pathboiler  
 
 parser = argparse.ArgumentParser(description='Process selected rows')
 parser.add_argument('--shots', nargs='+', help='Selected rows')
 parser.add_argument('--prodid', nargs='+', help='output directory')
 parser.add_argument('--castlistid', nargs='+', help='castlistid')
 
-# get the current file's directory path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# navigate to the desired file's path relative to the current directory
-db_path = os.path.join(current_dir, 'aubrushli.db')
-stylesfolder = current_dir + "/styles/"
-currstyle = sqlboiler.getstyle(db_path)
-style_path = os.path.join(stylesfolder, currstyle)
+current_dir,db_path = pathboiler.getkeypaths()
+stylesfolder, currstyle, style_path = pathboiler.getstylepaths()
 
 
 class ImageGeneratorThread(QThread):
     new_image = pyqtSignal(str)  # signal to emit when a new image is generated
     
-    def __init__(self, directory_path, myimages, prompt, negative_prompt, shot):
+    def __init__(self, imgdf):
         super().__init__()
-        self.directory_path = directory_path
-        self.myimages = myimages
-        self.prompt = prompt
-        self.negative_prompt = negative_prompt
-        self.shot = shot
+        self.imdf = imgdf
         
     def run(self):
 
-        SDV5_MODEL_PATH = current_dir
-        pipe = StableDiffusionPipeline.from_pretrained(SDV5_MODEL_PATH, torch_dtype=torch.float16)
-        pipe = pipe.to("cuda")
-        #g_cpu = torch.Generator()
-        next_number = len(os.listdir(self.directory_path)) + 1
-        for pics in range(next_number, next_number + self.myimages):
-            with autocast("cuda"):
-                seed = random.randint(1, 2147483647)
-                generator = torch.Generator("cuda").manual_seed(seed)
-                image = pipe(self.prompt, negative_prompt=self.negative_prompt, height=536, width=768, generator=generator).images[0]
-                imgpath = self.directory_path + "/" + "shot" + self.shot + "_" + str(pics) + "_SEED" + str(seed) + ".png"
-                metadata = PngInfo()
-                metadata.add_text("prompt", str(self.prompt))
-                metadata.add_text("seed", str(seed))
-                image.save(imgpath, pnginfo=metadata)
-               
-                self.new_image.emit(imgpath)  # emit the signal with the path of the new image
-                
-            pics += 1
+        #imdf
+
+        for index, row in self.imdf.iterrows():
+            directory_path = row['directory_path']
+            myimages = row['myimages']
+            prompt = row['prompt']
+            negative_prompt = row['negative_prompt']
+            shot = row['shot']
+            myseed = row['preferredseed']
+            #print(f"Name: {name}, Age: {age}, Country: {country}")
+
+            SDV5_MODEL_PATH = current_dir
+            pipe = StableDiffusionPipeline.from_pretrained(SDV5_MODEL_PATH, torch_dtype=torch.float16)   
+            pipe = pipe.to("cuda")
+            
+            next_number = len(os.listdir(directory_path)) + 1
+            for pics in range(next_number, next_number + myimages):
+                with autocast("cuda"):
+                    if pd.isnull(myseed) or myseed is None or len(str(myseed).strip()) == 0:
+                        seed = random.randint(1, 2147483647)
+                    else:
+                        print(myseed)
+                        seed = int(myseed)
+                    generator = torch.Generator("cuda").manual_seed(seed)
+                    image = pipe(prompt, negative_prompt=negative_prompt, guidance_scale=15, height=512, width=768, generator=generator).images[0]
+                    imgpath = directory_path + "/" + "shot" + shot + "_" + str(pics) + "_SEED" + str(seed) + ".png"
+                    metadata = PngInfo()
+                    metadata.add_text("prompt", str(prompt))
+                    metadata.add_text("seed", str(seed))
+                    image.save(imgpath, pnginfo=metadata)
+                    print(imgpath)
+                    self.new_image.emit(imgpath)  # emit the signal with the path of the new image
+                    
+                pics += 1
 
 
 class MainWindow(QMainWindow):
@@ -118,11 +122,15 @@ class MainWindow(QMainWindow):
 
           
 
-        def start_image_generation(self, directory_path, myimages, prompt, negative_prompt, shot):
+        def start_image_generation(self, imgdf):
+            
             if self.thread is not None and self.thread.isRunning():
+           
                 return  # don't start a new thread if one is already running
             
-            self.thread = ImageGeneratorThread(directory_path, myimages, prompt, negative_prompt, shot)
+           
+            
+            self.thread = ImageGeneratorThread(imgdf)
             self.thread.new_image.connect(self.save_image)
             self.thread.start()
         
@@ -134,6 +142,8 @@ def main():
         selected_shots = args.shots
         prodid = args.prodid[0]
         castlistid = args.castlistid[0]
+        columns = ['directory_path', 'myimages', 'prompt', 'negative_prompt', 'shot']
+        imagesdf = pd.DataFrame(columns=columns)
         
         
 
@@ -142,14 +152,7 @@ def main():
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
-        # Select data from settings table
-        c.execute('''SELECT * FROM Shotlists where productionid=?''',(prodid,))
-        settings_data = [dict(row) for row in c.fetchall()]
-
-        for row in settings_data:
-            num_images = row["numberofimages"]
-            shot_list_file = row["ShotlistPath"]
-            save_folder = row["ShotlistImagesFolder"]
+        shot_list_file, PreferredSeed, num_images, save_folder = sqlboiler.getshotlist(prodid)
 
         # Select data from roleactor table
         c.execute('''SELECT * FROM roleactor where castlistid=? AND actorname IS NOT NULL AND LENGTH(actorname) > 0''',(castlistid,))
@@ -157,7 +160,12 @@ def main():
         # Close the database connection
         conn.close()
 
-        myimages = num_images
+        #if I have a seed then only one image of each shot
+        if pd.isnull(PreferredSeed) or PreferredSeed is None or len(str(PreferredSeed).strip()) == 0:
+            myimages = num_images
+        else:
+            myimages = 1
+        print(myimages)
         topdir = save_folder
 
         # Define the file path for your CSV file
@@ -196,9 +204,9 @@ def main():
             
 
             shot_size = shot_size.replace("W","Wide")
-            shot_size = shot_size.replace("M","Medium")
-            shot_size = shot_size.replace("CU","Close Up")
-            prompt =  desc + ',' + scenename + ',' + shot_size + ',' + lens + "mm," + angle + ',' + shot_type + ',' + move + ',' + "black & white,pencil sketch,hyper realistic,intricate sharp details,smooth,colorful background"
+            shot_size = shot_size.replace("M","Close Up")
+            shot_size = shot_size.replace("CU","Extreme Close Up")
+            prompt =  shot_size + ',' + desc + ',' + scenename  + ',' + lens + "mm," + angle + ',' + shot_type + ',' + move + ',' + "black & white,pencil sketch,hyper realistic,intricate sharp details,smooth,colorful background"
             
             # Define the path of the directory you want to create
             directory_path = topdir + "/shot" + shot
@@ -212,7 +220,20 @@ def main():
             else:
                 print("Directory already exists.")
 
-            window.start_image_generation(directory_path, myimages, prompt, negative_prompt, shot)
+
+                #columns = ['directory_path', 'myimages', 'prompt', 'negative_prompt', 'shot']
+                #imagesdf = pd.DataFrame(columns=columns)
+            
+            # name = input('Enter a name: ')
+            # age = int(input('Enter an age: '))
+            # country = input('Enter a country: ')
+
+            print(myimages)
+            data = {'directory_path': directory_path, 'myimages': myimages, 'prompt': prompt, 'negative_prompt': negative_prompt, 'shot': shot, 'preferredseed': PreferredSeed }
+            imagesdf= imagesdf.append(data, ignore_index=True)
+
+        print(imagesdf)    
+        window.start_image_generation(imagesdf)
            
 
 
@@ -222,3 +243,10 @@ def main():
 if __name__ == '__main__':
      main()
 
+        
+
+
+
+
+    # Run the application
+#sys.exit(app.exec_())

@@ -4,18 +4,10 @@ import sys
 import subprocess
 from PyQt5.QtWidgets import QLineEdit, QApplication, QHBoxLayout, QMainWindow, QWidget, QVBoxLayout, QRadioButton, QLabel, QPushButton, QMessageBox, QComboBox, QGroupBox 
 import sqlboiler
+import pathboiler
 
-# get the current file's directory path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# navigate to the desired file's path relative to the current directory
-db_path = os.path.join(current_dir, 'aubrushli.db')
-#style_path = os.path.join(current_dir, 'dark_orange3.qss')
-stylesfolder = current_dir + "/styles/"
-
-
-currstyle = sqlboiler.getstyle(db_path)
-style_path = os.path.join(stylesfolder, currstyle)
+current_dir,db_path = pathboiler.getkeypaths()
+stylesfolder, currstyle, style_path = pathboiler.getstylepaths()
 
 class foldWindow(QMainWindow):
     def __init__(self):
@@ -27,15 +19,12 @@ class foldWindow(QMainWindow):
         
     
     def sqlsel(self):
-        conn = sqlite3.connect(db_path)
-        # Query the table
-        cursor = conn.execute("SELECT * from production")
-        for i, row in enumerate(cursor):
-              row_text = row
-              self.radio_button = QRadioButton(f"PRODUCTION {i + 1}: {row_text}")
-              self.vbox.addWidget(self.radio_button)
-              self.rows.append((i + 1, row, self.radio_button))
-        conn.close()
+        productions = sqlboiler.getallproduction()
+        for i, row in productions.iterrows():
+            radio_button = QRadioButton(f"Production: {row['ProductionName']}")
+            self.vbox.addWidget(radio_button)
+            self.rows.append((i + 1, row, radio_button))
+        
 
 
     def sqlins(self, prodname):
