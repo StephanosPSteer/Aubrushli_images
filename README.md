@@ -56,13 +56,13 @@ It is really the hardware requirements for [stable diffusion](https://github.com
 
 # What it won't let you do
 
-Most stable diffusion configuration things. Not even changing CFG_Scale (I leave at default, the thing is I figure if you are using this its for storyboards, you just want to use it and not get too involved in the frankly a bit unpredictable cfg_scale). At the moment the image aspect ratio is wider than the normal (512 x 512 1:1) its 768 x 512 (Stability AI recommends at least one axis being 512) so not quite 16:9. This is because this is aimed at storyboards and most storyboards will be wide screen. This may well cause issues on lower hardware. 
+Most stable diffusion configuration things. Not even changing CFG_Scale (I have set it at 15 as I want fairly realistic, the thing is I figure if you are using this its for storyboards, you just want to use it and not get too involved in the frankly a bit unpredictable cfg_scale). At the moment the image aspect ratio is wider than the normal (512 x 512 1:1) its 768 x 512 (Stability AI recommends at least one axis being 512) so not quite 16:9. This is because this is aimed at storyboards and most storyboards will be wide screen. This may well cause issues on lower hardware. 
 
 I havent added any controlnet features or actually any img to img features because the idea is to get images directly from a shot list. Thats not to say it won't look a million times better if I do but it will be difficult to automate so maybe later I will try and incorporate those options. 
 
 I looked at [Gligen](https://github.com/gligen/GLIGEN) and at composable diffusion/latent couple as I thought they could be very useful, but right now if I use a wide image format they tend to create multiples even more than normal SD which defeats the purpose of a composable image. 
 
-I want to properly incorporate Seeds as they will be useful for a consistent look across shots and that is my very next thing to do.
+~~I want to properly incorporate Seeds as they will be useful for a consistent look across shots and that is my very next thing to do.~~ INCORPORATED
 
 
 ## Brief suggested install process
@@ -90,7 +90,7 @@ I have added the ability to change styles and put a few stylesheets in the style
 # TODO LIST
 + ~~Change the qss stylesheet file in settings. as I am currently forcing people to use [this](https://github.com/sommerc/pyqt-stylesheets/blob/master/pyqtcss/src/dark_orange/style.qss)~~
 + Let people choose model in the app. The app currently selects whichever model is in the current folder. ***This is actually not as trivial as it should be ***
-+ Selectable SEEDS so that you can get a consistent look across shots.
++ ~~Selectable SEEDS so that you can get a consistent look across shots.~~ complete
 + ~~Investigate incorporating seed, prompt and model used into image metadata. I have added it, now to add a viewer to see it.~~
 + Allow changing image size/aspect ratio
 + Maybe CFG_Scale but perhaps just change to the most likely to replicate the prompt.
