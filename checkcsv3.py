@@ -6,24 +6,32 @@ import os
 import argparse
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QPushButton, QMessageBox
 import sqlboiler
-# get the current file's directory path
-current_dir = os.path.dirname(os.path.abspath(__file__))
+import pathboiler
+import pandas as pd
 
-# navigate to the desired file's path relative to the current directory
-db_path = os.path.join(current_dir, 'aubrushli.db')
-stylesfolder = current_dir + "/styles/"
+current_dir,db_path = pathboiler.getkeypaths()
+stylesfolder, currstyle, style_path = pathboiler.getstylepaths()
+parser = argparse.ArgumentParser(description='castlistid')
+parser.add_argument('--castlistid', nargs='+', help='castlistid')
+parser.add_argument('--prodid', nargs='+', help='castlistid')
 
-
-
-currstyle = sqlboiler.getstyle(db_path)
-style_path = os.path.join(stylesfolder, currstyle)
 
 class CSVWindow(QMainWindow):
-    def __init__(self, filename, prodid, castlistid):
+    def __init__(self):
         super().__init__()
-        self.filename = filename
-        self.prodid = prodid
-        self.castlistid = castlistid
+        args = parser.parse_args()
+        shotlistfile, seed, num_images, save_folder = sqlboiler.getshotlist(str(args.prodid[0]))
+        if pd.isnull(seed) or seed is None or len(str(seed).strip()) == 0:
+            self.seed = ""
+            print("its null")
+        else:
+            self.seed = seed
+            print("its not null")
+        
+        self.filename = shotlistfile
+        self.prodid = str(args.prodid[0])
+        self.castlistid = args.castlistid[0]
+        
         self.rows = []
         self.initUI()
         
@@ -45,6 +53,15 @@ class CSVWindow(QMainWindow):
                 checkbox = QCheckBox(f"SHOT {row['Shot Number']}: {row_text}")
                 vbox.addWidget(checkbox)
                 self.rows.append((row['Shot Number'], row, checkbox))
+        
+        # check all the rows for when seed happens
+        if len(str(self.seed).strip())> 0:
+            print(self.seed)
+            for i in range(vbox.count()):
+                widget = vbox.itemAt(i).widget()
+                if isinstance(widget, QCheckBox):
+                    widget.setChecked(True)
+
         
         # Create a horizontal layout for the confirm button
         hbox = QHBoxLayout()
@@ -85,26 +102,6 @@ class CSVWindow(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    parser = argparse.ArgumentParser(description='castlistid')
-    parser.add_argument('--castlistid', nargs='+', help='castlistid')
-    parser.add_argument('--prodid', nargs='+', help='castlistid')
-    args = parser.parse_args()
-    
-    # Connect to the database
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-    prodid = str(args.prodid[0])
-    castlistid = str(args.castlistid[0])
-    c.execute('''SELECT * FROM Shotlists where productionid=?''',(prodid,))
-    settings_data = [dict(row) for row in c.fetchall()]
-
-    for row in settings_data:
-        shot_list_file = row["ShotlistPath"]
-        
-    conn.close()
- 
-    csv_window = CSVWindow(shot_list_file, prodid, castlistid)
+    csv_window = CSVWindow()
     csv_window.show()
     sys.exit(app.exec_())
-
