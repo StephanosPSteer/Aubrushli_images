@@ -20,13 +20,15 @@ class CSVWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         args = parser.parse_args()
+        self.seeded = 0
         shotlistfile, seed, num_images, save_folder = sqlboiler.getshotlist(str(args.prodid[0]))
         if pd.isnull(seed) or seed is None or len(str(seed).strip()) == 0:
             self.seed = ""
-            print("its null")
+            #print("its null")
         else:
             self.seed = seed
-            print("its not null")
+            self.seeded = 1
+            #print("its not null")
         
         self.filename = shotlistfile
         self.prodid = str(args.prodid[0])
@@ -40,9 +42,14 @@ class CSVWindow(QMainWindow):
         central_widget = QWidget()
         vbox = QVBoxLayout()
         
-        # Add a label at the top of the window
-        label = QLabel('Please select shots that you want to create images for:')
-        label.setStyleSheet("font-size: 18pt; font-family: Courier; font-weight: bold;")
+        # Add a label at the top of the window check if seeded
+        if self.seeded == 0:
+            labtext = 'Please select shots that you want to create images for:'
+        else:
+            labtext = "As you have chosen a seed all shots are preselected and one image will be produced for each, you can unselect shots you don't want"
+
+        label = QLabel(labtext)
+        #label.setStyleSheet("font-size: 18pt; font-family: Courier; font-weight: bold;")
         vbox.addWidget(label)
         
         # Read the CSV file and create a checkbox for each row

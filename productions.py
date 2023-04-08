@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QLineEdit, QApplication, QHBoxLayout, QMainWindow, Q
 import sqlboiler
 import pathboiler
 
+
 current_dir,db_path = pathboiler.getkeypaths()
 stylesfolder, currstyle, style_path = pathboiler.getstylepaths()
 

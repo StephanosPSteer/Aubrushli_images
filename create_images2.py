@@ -5,10 +5,16 @@ import torch
 import sqlite3
 from torch import autocast
 from diffusers import StableDiffusionPipeline#, AutoencoderKL
+from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, UniPCMultistepScheduler
+from PIL import Image
+from controlnet_aux import OpenposeDetector
+from diffusers.utils import load_image
+
 import argparse
 import re
-from PIL import Image
+
 from PIL.PngImagePlugin import PngInfo
+
 from PyQt5 import QtWidgets, QtGui
 import sys
 from PyQt5.QtCore import Qt
@@ -17,7 +23,8 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWid
 from PyQt5.QtCore import QThread, pyqtSignal
 import json
 import sqlboiler
-import pathboiler  
+import pathboiler
+import numpy as np  
 
 parser = argparse.ArgumentParser(description='Process selected rows')
 parser.add_argument('--shots', nargs='+', help='Selected rows')
@@ -46,22 +53,92 @@ class ImageGeneratorThread(QThread):
             negative_prompt = row['negative_prompt']
             shot = row['shot']
             myseed = row['preferredseed']
+            shotsize = row['shot_size']
             #print(f"Name: {name}, Age: {age}, Country: {country}")
 
+                
+
+            self.openpose = OpenposeDetector.from_pretrained('lllyasviel/ControlNet')
+
+            
+
+            controlnet = ControlNetModel.from_pretrained(
+                                "fusing/stable-diffusion-v1-5-controlnet-openpose", torch_dtype=torch.float16
+                                )
+                        
+            pipe = StableDiffusionControlNetPipeline.from_pretrained(
+                            "runwayml/stable-diffusion-v1-5", controlnet=controlnet, safety_checker=None, torch_dtype=torch.float16
+                            )
+                    
+            pipe.scheduler = UniPCMultistepScheduler.from_config(pipe.scheduler.config)
+
+
+
+            pipe.enable_model_cpu_offload()
+
+
+
+            #image = pipe("chef in the kitchen", image, num_inference_steps=20).images[0]
+
+            #image.save('G:/Aubrushli_images_current/chef_pose_out.png')
+
+
             SDV5_MODEL_PATH = current_dir
-            pipe = StableDiffusionPipeline.from_pretrained(SDV5_MODEL_PATH, torch_dtype=torch.float16)   
-            pipe = pipe.to("cuda")
+            #pipe = StableDiffusionPipeline.from_pretrained(SDV5_MODEL_PATH, torch_dtype=torch.float16)   
+            #pipe = pipe.to("cuda")
             
             next_number = len(os.listdir(directory_path)) + 1
             for pics in range(next_number, next_number + myimages):
-                with autocast("cuda"):
+                #with autocast("cuda"):
                     if pd.isnull(myseed) or myseed is None or len(str(myseed).strip()) == 0:
                         seed = random.randint(1, 2147483647)
                     else:
                         print(myseed)
                         seed = int(myseed)
                     generator = torch.Generator("cuda").manual_seed(seed)
-                    image = pipe(prompt, negative_prompt=negative_prompt, guidance_scale=15, height=512, width=768, generator=generator).images[0]
+
+                    if shotsize.lower() == ("big closeup" or "bcu"):
+                                folder_path = current_dir + '/shot_templates/big_closeup/'
+                    elif shotsize.lower() == ("close up" or "cu"):
+                                    folder_path = current_dir + '/shot_templates/closeup/'
+                    elif shotsize.lower() == "cowboy":
+                                    folder_path = current_dir + '/shot_templates/cowboy/'
+                    elif shotsize.lower() == ("extreme close up" or "ecu"):
+                                    folder_path = current_dir + '/shot_templates/extreme_closeup/'
+                    elif shotsize.lower() == ("extreme wide" or "establishing shot"):
+                                    folder_path = current_dir + '/shot_templates/extreme_wide/'
+                    elif shotsize.lower() == "full":
+                                    folder_path = current_dir + '/shot_templates/Full/'
+                    elif shotsize.lower() == ("medium closeup" or "mcu"):
+                                    folder_path = current_dir + '/shot_templates/medium_closeup/'
+                    elif shotsize.lower() == ("wide" or "w"):
+                                    folder_path = current_dir + '/shot_templates/wides/'
+                    else:
+                                    folder_path = current_dir + '/shot_templates/medium/'
+
+                                # Get a list of all filenames in the folder
+                    all_files = os.listdir(folder_path)
+
+                                # Filter out any subdirectories, if present
+                    file_list = [file for file in all_files if os.path.isfile(os.path.join(folder_path, file))]
+
+                                # Select a random filename from the list
+                    random_file = random.choice(file_list)
+
+                                # Read the image file using PIL
+                    input_image = Image.open(folder_path + random_file)
+
+                                # Convert the image to NumPy array with dtype uint8
+                    input_image = np.array(input_image, dtype=np.uint8)
+
+
+                            #poseimage = load_image(random_file)
+                    print(random_file)
+                    poseimage = self.openpose(input_image)
+
+                    
+
+                    image = pipe(prompt, poseimage, negative_prompt=negative_prompt, guidance_scale=15, height=512, width=768, generator=generator).images[0]
                     imgpath = directory_path + "/" + "shot" + shot + "_" + str(pics) + "_SEED" + str(seed) + ".png"
                     metadata = PngInfo()
                     metadata.add_text("prompt", str(prompt))
@@ -70,7 +147,7 @@ class ImageGeneratorThread(QThread):
                     print(imgpath)
                     self.new_image.emit(imgpath)  # emit the signal with the path of the new image
                     
-                pics += 1
+                    pics += 1
 
 
 class MainWindow(QMainWindow):
@@ -115,10 +192,21 @@ class MainWindow(QMainWindow):
             targetImage = Image.open(imgpath)
             #print(targetImage.text)
             img_str = json.dumps(targetImage.text)
-            infolab = QLabel(img_str)
-            #self.layout.addWidget(self.imagelabel)
+            data = json.loads(img_str)
+            prompt = data['prompt']
+            seed = data['seed']
+            prompttit = QLabel('Prompt Text')
+            seedtit = QLabel('Seed Number')
+            promptlab = QLabel(prompt)
+            promptlab.setTextInteractionFlags(Qt.TextSelectableByMouse)
+            seedlab = QLabel(seed)
+            seedlab.setTextInteractionFlags(Qt.TextSelectableByMouse)
             self.vbox.addWidget(object)
-            self.vbox.addWidget(infolab)
+             
+            self.vbox.addWidget(promptlab)
+            
+            self.vbox.addWidget(seedlab)
+            #print(img_str)
 
           
 
@@ -203,9 +291,7 @@ def main():
                 desc = re.sub(r'(?i)\b{}\b'.format(re.escape(row["rolename"])), row["actorname"], desc)
             
 
-            shot_size = shot_size.replace("W","Wide")
-            shot_size = shot_size.replace("M","Close Up")
-            shot_size = shot_size.replace("CU","Extreme Close Up")
+            
             prompt =  shot_size + ',' + desc + ',' + scenename  + ',' + lens + "mm," + angle + ',' + shot_type + ',' + move + ',' + "black & white,pencil sketch,hyper realistic,intricate sharp details,smooth,colorful background"
             
             # Define the path of the directory you want to create
@@ -229,7 +315,7 @@ def main():
             # country = input('Enter a country: ')
 
             print(myimages)
-            data = {'directory_path': directory_path, 'myimages': myimages, 'prompt': prompt, 'negative_prompt': negative_prompt, 'shot': shot, 'preferredseed': PreferredSeed }
+            data = {'directory_path': directory_path, 'myimages': myimages, 'prompt': prompt, 'negative_prompt': negative_prompt, 'shot': shot, 'preferredseed': PreferredSeed, 'shot_size': shot_size}
             imagesdf= imagesdf.append(data, ignore_index=True)
 
         print(imagesdf)    
